@@ -25,7 +25,7 @@ sql.connect(config, function (err) {
     // query to the database and get the records
     app.use(formidableMiddleware());
 
-
+    
     let CORSres = (res) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -44,26 +44,8 @@ sql.connect(config, function (err) {
 
 
 
-///////ADMIN
+    app.post('/api/insert/sanpham', function(req, res) {
 
-    //STORE:
-    app.post('/api/insert/sanpham', async function(req, res) {
-        console.log(req.files.file);
-        console.log(req.fields.tensanpham);
-        console.log(req.fields.soluong);
-        console.log(req.fields.gia);
-
-        let newPath =path.join(__dirname, "./public/" + req.files.file.name.replace(/\s+/g, ''));
-        console.log(req.files.file.path,newPath)
-        fs.readFile(req.files.file.path, function (err, data) {
-            fs.writeFile(newPath, data, function (err) {
-             });
-        });
-        let resu = await QueryFu("INSERT INTO SANPHAM (TEN, SOLUONGBAN, ANH, GIA, IDCUAHANG) VALUES ( N'"+req.fields.tensanpham + "', '"+req.fields.soluong + "' , 'http://localhost:4000/public/"+ req.files.file.name.replace(/\s+/g, '') +"' , '"+req.fields.gia +"' , '"+req.fields.idcuahang + "');");
-        CORSres(res).send(resu);
-    });
-
-    app.post('/api/update/0/sanpham', async function(req, res) {
         console.log(req.files.file);
         console.log(req.fields.tensanpham);
         console.log(req.fields.soluong);
@@ -76,41 +58,40 @@ sql.connect(config, function (err) {
              });
            });
 
-        let resu = await QueryFu("UPDATE SANPHAM SET TEN = N'"+req.fields.tensanpham+"', SOLUONGBAN = '"+req.fields.soluong+"', GIA = '"+req.fields.gia+"', ANH = 'http://localhost:4000/public/"+ req.files.file.name.replace(/\s+/g, '') +"' WHERE ID = "+req.fields.idsanpham+";");
-        CORSres(res).send(resu);
-    });
-
-    app.post('/api/update/1/sanpham', async function(req, res) {
-        console.log(req.fields.tensanpham);
-        console.log(req.fields.soluong);
-        console.log(req.fields.gia);
-        console.log(req.fields.idcuahang);
-        console.log(req.fields.idsanpham);
-
-        let resu = await QueryFu("UPDATE SANPHAM SET TEN = N'"+req.fields.tensanpham+"', SOLUONGBAN = '"+req.fields.soluong+"', GIA = '"+req.fields.gia+"' WHERE ID = "+req.fields.idsanpham+";");
-        CORSres(res).send(resu);
+        request.query("INSERT INTO SANPHAM (TEN, SOLUONGBAN, ANH, GIA, IDCUAHANG) VALUES ( '"+req.fields.tensanpham + "', '"+req.fields.soluong + "' , 'http://localhost:4000/public/"+ req.files.file.name.replace(/\s+/g, '') +"' , '"+req.fields.gia +"' , '"+req.fields.idcuahang + "');", function (err, recordset) {
+            if (err) console.log(err) 
+            // send records as a response
+            CORSres(res).send("success");
+        });
     });
 
 
 
+    app.post('/api/insert/cuahang', function(req, res) {
 
-
-
-
-    ///LOGIN:
-    app.post('/api/insert/cuahang', async function(req, res) {
+    
             console.log(req.fields.tendangnhap);
             console.log(req.fields.tencuahang);
             console.log(req.fields.mota);
             console.log(req.fields.matkhau);
 
-            let resu = await QueryFu("INSERT INTO CUAHANG (TENDANGNHAP, TEN , MOTA, ID_LOAISANPHAM, MATKHAU) VALUES ( '"+req.fields.tendangnhap + "', N'"+req.fields.tencuahang + "' , N'"+req.fields.mota +"' , 1 , '"+req.fields.matkhau + "');");
-            CORSres(res).send(resu);
+            request.query("INSERT INTO CUAHANG (TENDANGNHAP, TEN , MOTA, MATKHAU) VALUES ( '"+req.fields.tendangnhap + "', N'"+req.fields.tencuahang + "' , N'"+req.fields.mota +"' , '"+req.fields.matkhau + "');", function (err, recordset) {
+                if (err) console.log(err) 
+                // send records as a response
+                CORSres(res).send("success");
+            });
         });
 
-        app.get('/api/checklogin/cuahang', async function(req, res) {
+
+        app.get('/api/checklogin/cuahang', function(req, res) {
+
+
+
+
             console.log(req.query.matkhau);
             console.log(req.query.tendangnhap);
+
+
 
             request.query("select * from CUAHANG WHERE TENDANGNHAP = '"+req.query.tendangnhap + "' AND MATKHAU = '"+req.query.matkhau + "';", function (err, recordset) {
                 if (err) console.log(err)
@@ -121,44 +102,22 @@ sql.connect(config, function (err) {
                 }else{
                     CORSres(res).send(recordset['recordsets'][0]);
                 }
+             
             });
+
+
         });
 
 
 
 
-        /// ACCOUNT:
-        app.get('/cuahang/admin/detail', function (req, res) {
-            request.query('SELECT CUAHANG.TEN, CUAHANG.TENDANGNHAP, CUAHANG.ANH, CUAHANG.MOTA, CUAHANG.VITRI, CUAHANG.ID_LOAISANPHAM, CUAHANG.THOIGIANMO, LOAISANPHAM.TEN AS TEN_LOAISANPHAM FROM CUAHANG, LOAISANPHAM WHERE CUAHANG.ID = '+req.query.idch +  'AND CUAHANG.ID_LOAISANPHAM = LOAISANPHAM.ID', function (err, recordset) {
-                if (err) console.log(err)
-                // send records as a response
-                CORSres(res).send(recordset);
-            });
-        }); 
+        app.post('/api/update/0/sanpham', function(req, res) {
 
-        app.post('/api/update/0/account', function(req, res) {
-            console.log(req.fields.idch);
-            console.log(req.fields.tendangnhap);
-            console.log(req.fields.tencuahang);
-            console.log(req.fields.diachi);
-            console.log(req.fields.gioithieu);
-            console.log(req.fields.thoigianmo);
-            console.log(req.fields.idloaisanpham);
-            request.query("UPDATE CUAHANG SET TEN = N'"+req.fields.tencuahang+"', MOTA = N'"+req.fields.gioithieu+"', VITRI = N'"+req.fields.diachi+"', THOIGIANMO = N'"+req.fields.thoigianmo+"', TENDANGNHAP = N'"+req.fields.tendangnhap+"' , ID_LOAISANPHAM = "+req.fields.idloaisanpham+" WHERE ID = "+req.fields.idch+";", function (err, recordset) {
-                if (err) console.log(err) 
-                // send records as a response
-                CORSres(res).send("success");
-            });
-        });
-
-        app.post('/api/update/1/account', function(req, res) {
-            console.log(req.fields.idch);
-            console.log(req.fields.tendangnhap);
-            console.log(req.fields.tencuahang);
-            console.log(req.fields.diachi);
-            console.log(req.fields.gioithieu);
-            console.log(req.fields.thoigianmo);
-            console.log(req.fields.idloaisanpham);
+    
+            console.log(req.files.file);
+            console.log(req.fields.tensanpham);
+            console.log(req.fields.soluong);
+            console.log(req.fields.gia);
 
             let newPath =path.join(__dirname, "./public/" + req.files.file.name.replace(/\s+/g, ''));
             console.log(req.files.file.path,newPath)
@@ -166,6 +125,80 @@ sql.connect(config, function (err) {
                 fs.writeFile(newPath, data, function (err) {
                  });
                });
+
+            request.query("UPDATE SANPHAM SET TEN = N'"+req.fields.tensanpham+"', SOLUONGBAN = '"+req.fields.soluong+"', GIA = '"+req.fields.gia+"', ANH = 'http://localhost:4000/public/"+ req.files.file.name.replace(/\s+/g, '') +"' WHERE ID = "+req.fields.idsanpham+";", function (err, recordset) {
+                if (err) console.log(err) 
+                // send records as a response
+                CORSres(res).send("success");
+            });
+        });
+
+        app.post('/api/update/1/sanpham', function(req, res) {
+
+    
+            console.log(req.fields.tensanpham);
+            console.log(req.fields.soluong);
+            console.log(req.fields.gia);
+            console.log(req.fields.idcuahang);
+            console.log(req.fields.idsanpham);
+
+            console.log("UPDATE SANPHAM SET TEN = '"+req.fields.tensanpham+"', SOLUONGBAN= '"+req.fields.soluong+"', GIA = '"+req.fields.gia+"' WHERE ID = "+req.fields.idsanpham+";")
+  
+            request.query("UPDATE SANPHAM SET TEN = N'"+req.fields.tensanpham+"', SOLUONGBAN = '"+req.fields.soluong+"', GIA = '"+req.fields.gia+"' WHERE ID = "+req.fields.idsanpham+";", function (err, recordset) {
+                if (err) console.log(err) 
+                // send records as a response
+                CORSres(res).send("success");
+            });
+        });
+
+
+
+
+
+
+        app.post('/api/update/0/account', function(req, res) {
+
+    
+            console.log(req.fields.idch);
+            console.log(req.fields.tendangnhap);
+            console.log(req.fields.tencuahang);
+            console.log(req.fields.diachi);
+            console.log(req.fields.gioithieu);
+            console.log(req.fields.thoigianmo);
+            console.log(req.fields.idloaisanpham);
+
+
+
+  
+            request.query("UPDATE CUAHANG SET TEN = N'"+req.fields.tencuahang+"', MOTA = N'"+req.fields.gioithieu+"', VITRI = N'"+req.fields.diachi+"', THOIGIANMO = N'"+req.fields.thoigianmo+"', TENDANGNHAP = N'"+req.fields.tendangnhap+"' , ID_LOAISANPHAM = "+req.fields.idloaisanpham+" WHERE ID = "+req.fields.idch+";", function (err, recordset) {
+                if (err) console.log(err) 
+                // send records as a response
+                CORSres(res).send("success");
+            });
+        });
+
+
+        app.post('/api/update/1/account', function(req, res) {
+
+    
+            console.log(req.fields.idch);
+            console.log(req.fields.tendangnhap);
+            console.log(req.fields.tencuahang);
+            console.log(req.fields.diachi);
+            console.log(req.fields.gioithieu);
+            console.log(req.fields.thoigianmo);
+            console.log(req.fields.idloaisanpham);
+
+
+            let newPath =path.join(__dirname, "./public/" + req.files.file.name.replace(/\s+/g, ''));
+            console.log(req.files.file.path,newPath)
+            fs.readFile(req.files.file.path, function (err, data) {
+                fs.writeFile(newPath, data, function (err) {
+                 });
+               });
+
+
+  
             request.query("UPDATE CUAHANG SET TEN = N'"+req.fields.tencuahang+"', MOTA = N'"+req.fields.gioithieu+"', VITRI = N'"+req.fields.diachi+"', THOIGIANMO = N'"+req.fields.thoigianmo+"', TENDANGNHAP = N'"+req.fields.tendangnhap+"' , ID_LOAISANPHAM = "+req.fields.idloaisanpham+", ANH = 'http://localhost:4000/public/"+ req.files.file.name.replace(/\s+/g, '') +"' WHERE ID = "+req.fields.idch+";", function (err, recordset) {
                 if (err) console.log(err) 
                 // send records as a response
@@ -176,16 +209,66 @@ sql.connect(config, function (err) {
 
 
 
-    ///ORDERS: 
+
+
+
+
+
+
+        app.get('/cuahang/admin/detail', function (req, res) {
+
+    
+            request.query('SELECT CUAHANG.TEN, CUAHANG.TENDANGNHAP, CUAHANG.ANH, CUAHANG.MOTA, CUAHANG.VITRI, CUAHANG.ID_LOAISANPHAM, CUAHANG.THOIGIANMO, LOAISANPHAM.TEN AS TEN_LOAISANPHAM FROM CUAHANG, LOAISANPHAM WHERE CUAHANG.ID = '+req.query.idch +  'AND CUAHANG.ID_LOAISANPHAM = LOAISANPHAM.ID', function (err, recordset) {
+                if (err) console.log(err)
+                // send records as a response
+                CORSres(res).send(recordset);
+            });
+        }); 
+
+
+
+
+
+
+
+
+
+
+        app.get('/order/update/approve', async function (req, res) {
+
+
+            let resu = await QueryFu("UPDATE DONHANG SET TRANGTHAI = '"+req.query.trangthai +"' WHERE ID = "+req.query.id);
+            CORSres(res).send(resu);
+
+
+            // request.query("UPDATE DONHANG SET TRANGTHAI = '"+req.query.trangthai +"' WHERE ID = "+req.query.id, function (err, recordset) {
+            //     if (err) console.log(err)
+            //     // send records as a response
+            //     CORSres(res).send(recordset);
+            // });
+        });
+
+
+
+
+
+
+
+
     app.get('/cuahang/donhang/list', function (req, res) {
-        request.query('SELECT * FROM  (SELECT DONHANG.ID, DONHANG.GIA, DONHANG.NGAYDAT, DONHANG.TRANGTHAI, USERS.ANH, USERS.TEN, USERS.DIACHI FROM DONHANG LEFT JOIN USERS ON (DONHANG.ID_USERS = USERS.ID)) A INNER JOIN   (SELECT ID_DONHANG, SUM(SOLUONG) AS SOLUONG FROM DONHANG_SANPHAM  WHERE ID_DONHANG IN (SELECT DONHANG.ID FROM DONHANG INNER JOIN USERS  ON DONHANG.ID_USERS = USERS.ID)  GROUP BY ID_DONHANG ) B ON (A.ID = B.ID_DONHANG)', function (err, recordset) {
+
+
+        request.query('SELECT * FROM  (SELECT DONHANG.ID, DONHANG.GIA, DONHANG.NGAYDAT, DONHANG.TRANGTHAI, USERS.ANH, USERS.TEN, USERS.DIACHI FROM DONHANG LEFT JOIN USERS ON (DONHANG.ID_USERS = USERS.ID)) A INNER JOIN   (SELECT ID_DONHANG, SUM(SOLUONG) AS SOLUONG FROM DONHANG_SANPHAM  WHERE ID_DONHANG IN (SELECT DONHANG.ID FROM DONHANG INNER JOIN USERS  ON DONHANG.ID_USERS = USERS.ID)  GROUP BY ID_DONHANG ) B ON (A.ID = B.ID_DONHANG)        ', function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
             CORSres(res).send(recordset);
         });
     });
 
+
     app.get('/cuahang/donhang/detail', function (req, res) {
+
+
         request.query('SELECT * FROM DONHANG_SANPHAM, SANPHAM WHERE DONHANG_SANPHAM.ID_SANPHAM = SANPHAM.ID AND DONHANG_SANPHAM.ID_DONHANG = '+req.query.idorder, function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
@@ -193,58 +276,18 @@ sql.connect(config, function (err) {
         });
     });
 
-    app.get('/order/update/approve', async function (req, res) {
-        let resu = await QueryFu("UPDATE DONHANG SET TRANGTHAI = '"+req.query.trangthai +"' WHERE ID = "+req.query.id);
-        CORSres(res).send(resu);
-    });
+
+    app.get('/cuahang/dexuatlist', function (req, res) {
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////ADNROID:
-    app.get('/api/loaicuahang/list', function (req, res) {
-        request.query('select * from LOAISANPHAM', function (err, recordset) {
-            if (err) console.log(err)
-            // send records as a response
-            CORSres(res).send(recordset);
-        });
-    });
-    app.get('/api/loaicuahang/cuahang/list', function (req, res) {
-        request.query('select * from CUAHANG WHERE ID_LOAISANPHAM = '+req.query.idsp, function (err, recordset) {
-            if (err) console.log(err)
-            // send records as a response
-            CORSres(res).send(recordset);
-        });
-    });
-
-
-
-
-
-
-
-
-    app.get('/api/cuahang/dexuat/list', function (req, res) {
         request.query('select * from CUAHANG', function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
-            console.log(recordset);
             CORSres(res).send(recordset);
         });
     });
 
-    app.get('/api/cuahang/timkiem/list', function (req, res) {
+    app.get('/cuahang/timkiemlist', function (req, res) {
         request.query("select * from CUAHANG WHERE TEN LIKE '%"+req.query.setxt+"%'", function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
@@ -253,14 +296,29 @@ sql.connect(config, function (err) {
         });
     });
 
+    app.get('/cuahang/cate', function (req, res) {
+        request.query('select * from CUAHANG WHERE ID_LOAISANPHAM = '+req.query.idsp, function (err, recordset) {
+            if (err) console.log(err)
+            // send records as a response
+            CORSres(res).send(recordset);
+        });
+    });
+
+    app.get('/loaisanpham/list', function (req, res) {
 
 
 
+        request.query('select * from LOAISANPHAM', function (err, recordset) {
+            if (err) console.log(err)
+            // send records as a response
+            CORSres(res).send(recordset);
+        });
+    });
+
+    app.get('/sanpham/list', function (req, res) {
 
 
 
-
-    app.get('/api/cuahang/sanpham/list', function (req, res) {
         request.query('select * from SANPHAM where IDCUAHANG = '+req.query.id, function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
@@ -268,8 +326,16 @@ sql.connect(config, function (err) {
         });
     });
 
+    app.get('/donhang/list', function (req, res) {
+        request.query('select * from DONHANG', function (err, recordset) {
+            if (err) console.log(err)
+            // send records as a response
+            CORSres(res).send(recordsets);
+        });
+    });
 
-    app.get('/api/user/cuahang/checksave', function (req, res) {
+
+    app.get('/checksave', function (req, res) {
         request.query('select * from USER_CUAHANG WHERE ID_USER = '+req.query.iduser + ' AND ID_CUAHANG = '+req.query.idch, function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
@@ -277,14 +343,15 @@ sql.connect(config, function (err) {
         });
     });
 
-    app.get('/api/user/cuahang/insertsave', function (req, res) {
+    app.get('/insertsave', function (req, res) {
         request.query("INSERT INTO USER_CUAHANG (ID_USER, ID_CUAHANG, DANHGIA, MARK) VALUES ("+req.query.iduser + ", "+req.query.idch + " , "+req.query.danhgia +" , "+req.query.mark +");", function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
             CORSres(res).send(recordset);
         });
     });
-    app.get('/api/user/cuahang/updatesave', function (req, res) {
+
+    app.get('/updatesave', function (req, res) {
         request.query("UPDATE USER_CUAHANG SET DANHGIA = "+req.query.danhgia +" , MARK = "+req.query.mark +" WHERE ID_USER = "+req.query.iduser +" AND ID_CUAHANG = "+req.query.idch +";", function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
@@ -292,8 +359,7 @@ sql.connect(config, function (err) {
         });
     });
 
-
-    app.get('/api/user/cuahang/save/list', function (req, res) {
+    app.get('/getsave', function (req, res) {
         request.query("SELECT CUAHANG.ID , CUAHANG.TEN , CUAHANG.MOTA, CUAHANG.VITRI, CUAHANG.THOIGIANMO, CUAHANG.DANHGIA, CUAHANG.GIATB, CUAHANG.ANH FROM CUAHANG INNER JOIN USER_CUAHANG ON CUAHANG.ID=USER_CUAHANG.ID_CUAHANG WHERE ID_USER="+req.query.iduser +" AND MARK > 0;", function (err, recordset) {
             if (err) console.log(err)
             // send records as a response
@@ -302,22 +368,45 @@ sql.connect(config, function (err) {
     });
 
 
+    app.get('/donhang_sanpham/list', function (req, res) {
+        request.query('SELECT * FROM SANPHAM INNER JOIN DONHANG_SANPHAM ON SANPHAM.ID=DONHANG_SANPHAM.ID_SANPHAM WHERE ID_DONHANG='+req.query.id, function (err, recordset) {
+            if (err) console.log(err)
+            // send records as a response
+            CORSres(res).send(recordset);
+        });
+    });
 
+        
+    app.get('/donhang/insert', function (req, res) {
+        request.query("INSERT INTO DONHANG (GIA, TRANGTHAI) "+
+        "OUTPUT Inserted.ID "+
+        "VALUES("+req.query.gia+", 'N');", function (err, recordset) {
+            if (err) console.log(err)
 
+            // send records as a response
+            data = recordset['recordset'];
+            data = JSON.parse(JSON.stringify( data[0]));
 
+            console.log(data.ID)
 
+            var string = String(req.query.sp).split("-");
+            string.forEach(element => {
+                element = element.split("i");
+                request.query("INSERT INTO DONHANG_SANPHAM (ID_DONHANG, ID_SANPHAM,SOLUONG) "+
+                " VALUES("+data.ID+", "+element[0]+", "+element[1]+");");
+            });
+            CORSres(res).send(data);
+        });
+    });
 
-
-    app.post('/api/user/donhang/insert', function (req, res) {
+    app.post('/donhang/insert', function (req, res) {
         console.log(req.fields);
         console.log(req.query);
 
-        request.query("INSERT INTO DONHANG (GIA, TRANGTHAI, ID_USERS) "+
+        request.query("INSERT INTO DONHANG (GIA, TRANGTHAI) "+
         "OUTPUT Inserted.ID "+
-        "VALUES("+req.query.gia+", 'N', 3);", function (err, recordset) {
+        "VALUES("+req.query.gia+", 'N');", function (err, recordset) {
             if (err) console.log(err)
-
-            console.log(recordset)
 
             // send records as a response
             data = recordset['recordset'];
@@ -333,39 +422,7 @@ sql.connect(config, function (err) {
         });
     });
 
-    app.get('/api/user/donhang/list', function (req, res) {
-        request.query('select * from DONHANG', function (err, recordset) {
-            if (err) console.log(err)
-            // send records as a response
-            CORSres(res).send(recordset);
-        });
-    });
-
-    app.get('/api/user/donhang/sanpham/list', function (req, res) {
-        request.query('SELECT * FROM SANPHAM INNER JOIN DONHANG_SANPHAM ON SANPHAM.ID=DONHANG_SANPHAM.ID_SANPHAM WHERE ID_DONHANG='+req.query.id, function (err, recordset) {
-            if (err) console.log(err)
-            // send records as a response
-            CORSres(res).send(recordset);
-        });
-    });
-
-    app.get('/api/user/donhang/chartdata', function (req, res) {
-        request.query("SELECT NGAYDAT, COUNT(NGAYDAT) AS SOLUONG FROM DONHANG GROUP BY NGAYDAT ORDER BY NGAYDAT;", function (err, recordset) {
-            if (err) console.log(err)
-
-            // send records as a response
-            CORSres(res).send(recordset);
-        });
-    });
-
-
-
-
-
-
-
-
-    app.get('/api/user/insert', function (req, res) {
+    app.get('/users/insert', function (req, res) {
         // CORSres(res).send(req.query.anh);
         request.query("INSERT INTO USERS (TEN, ANH, EMAIL, MATKHAU, SDT) "+
         "OUTPUT Inserted.ID "+
@@ -375,7 +432,7 @@ sql.connect(config, function (err) {
         });
     });
 
-    app.get('/api/user/update', function (req, res) {
+    app.get('/users/update', function (req, res) {
         // CORSres(res).send(req.query.anh);
         request.query("UPDATE USERS SET TEN = '"+req.query.ten+"', EMAIL= '"+req.query.email+"' , SDT= '"+req.query.sdt+"' , ANH= '"+req.query.anh+"' WHERE ID = "+req.query.id+";", function (err, recordset) {
             if (err) console.log(err)
@@ -383,7 +440,7 @@ sql.connect(config, function (err) {
         });
     });
 
-    app.get('/api/users/get', function (req, res) {
+    app.get('/users/get', function (req, res) {
         request.query("select * from USERS WHERE TEN = '"+req.query.ten+"' AND MATKHAU = '"+req.query.matkhau+"'", function (err, recordset) {
             if (err) console.log(err)
 
@@ -393,23 +450,7 @@ sql.connect(config, function (err) {
         });
     });
 
-    app.get('/api/user/googleauth', function (req, res) {
-        request.query("select * from USERS WHERE TEN = '"+req.query.ten+"' AND EMAIL = '"+req.query.email+"'", function (err, recordset) {
-            if (err) console.log(err)
-            if(recordset['recordset'].length < 1){
-                request.query("INSERT INTO USERS (TEN, ANH, EMAIL, MATKHAU, SDT) "+
-                        "OUTPUT Inserted.ID, Inserted.TEN,  Inserted.ANH , Inserted.EMAIL, Inserted.MATKHAU, Inserted.SDT "+
-                        "VALUES('"+req.query.ten+"', '"+req.query.anh+"', '"+req.query.email+"','xxx', 'xxx');", function (err, recordsetx) {
-                        if (err) console.log(err)
-                        CORSres(res).send(recordsetx);
-                });
-            }else{
-                CORSres(res).send(recordset);
-            }
-        });
-    });
-
-    app.get('/api/user/getphone', function (req, res) {
+    app.get('/users/getphone', function (req, res) {
         request.query("select * from USERS WHERE SDT = '"+req.query.sdt+"'", function (err, recordset) {
             if (err) console.log(err)
 
@@ -419,12 +460,36 @@ sql.connect(config, function (err) {
     });
 
 
+    app.get('/orders/getchartdata', function (req, res) {
+        request.query("SELECT NGAYDAT, COUNT(NGAYDAT) AS SOLUONG FROM DONHANG GROUP BY NGAYDAT ORDER BY NGAYDAT;", function (err, recordset) {
+            if (err) console.log(err)
+
+            // send records as a response
+            CORSres(res).send(recordset);
+        });
+    });
 
 
+    app.get('/googleauth', function (req, res) {
+        request.query("select * from USERS WHERE TEN = '"+req.query.ten+"' AND EMAIL = '"+req.query.email+"'", function (err, recordset) {
+            if (err) console.log(err)
+            if(recordset['recordset'].length < 1){
+                request.query("INSERT INTO USERS (TEN, ANH, EMAIL, MATKHAU, SDT) "+
+                        "OUTPUT Inserted.ID, Inserted.TEN,  Inserted.ANH , Inserted.EMAIL, Inserted.MATKHAU, Inserted.SDT "+
+                        "VALUES('"+req.query.ten+"', '"+req.query.anh+"', '"+req.query.email+"','xxx', 'xxx');", function (err, recordsetx) {
+                        if (err) console.log(err)
+                        CORSres(res).send(recordsetx);
+                });
+
+            }else{
+                CORSres(res).send(recordset);
+            }
+        });
+    });
 
 
-////GET IMAGE:
     app.get('/public/:version', function (req, res) {
+
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
