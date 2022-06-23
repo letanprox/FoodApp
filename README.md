@@ -1,13 +1,4 @@
-# Node Crash Course Files
+USE PORT 4000:
+API MVC.
 
-> These files go with the Node crash course on YouTube.
-
-## Quick Start
-
-```bash
-# Install dependencies
-npm install
-
-# Serve on localhost:5000
-npm start
-```
+[NHÓM 12 N185 N195.pdf](https://github.com/letanprox/FoodApp-API-SERVER/files/8968812/NHOM.12.N185.N195.pdf)
